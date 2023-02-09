@@ -10,6 +10,7 @@ import net.minecraft.world.entity.player.Player
 import net.minecraft.world.item.context.BlockPlaceContext
 import net.minecraft.world.level.BlockGetter
 import net.minecraft.world.level.Level
+import net.minecraft.world.level.LevelAccessor
 import net.minecraft.world.level.block.BaseEntityBlock
 import net.minecraft.world.level.block.Block
 import net.minecraft.world.level.block.RenderShape
@@ -29,6 +30,7 @@ import org.valkyrienskies.eureka.blockentity.ShipHelmBlockEntity
 import org.valkyrienskies.eureka.ship.EurekaShipControl
 import org.valkyrienskies.eureka.util.DirectionalShape
 import org.valkyrienskies.eureka.util.RotShapes
+import org.valkyrienskies.mod.common.entity.ShipMountingEntity
 import org.valkyrienskies.mod.common.getShipManagingPos
 import org.valkyrienskies.mod.common.getShipObjectManagingPos
 
@@ -63,6 +65,7 @@ class ShipHelmBlock(properties: Properties, val woodType: WoodType) : BaseEntity
         }
     }
 
+    @Deprecated("Deprecated in Java")
     override fun use(
         state: BlockState,
         level: Level,
@@ -83,6 +86,18 @@ class ShipHelmBlock(properties: Properties, val woodType: WoodType) : BaseEntity
         } else if (blockEntity.sit(player)) {
             InteractionResult.CONSUME
         } else InteractionResult.PASS
+    }
+    //destroy
+
+    override fun destroy(level: LevelAccessor, pos: BlockPos, state: BlockState) {
+        if (level.isClientSide) return
+        level as ServerLevel
+        level.players().forEach { player ->
+            if (player.rootVehicle is ShipMountingEntity && player.rootVehicle.blockPosition().distSqr(pos) < 4) {
+                player.stopRiding()
+            }
+        }
+        super.destroy(level, pos, state)
     }
 
     override fun getRenderShape(blockState: BlockState): RenderShape {
@@ -116,16 +131,19 @@ class ShipHelmBlock(properties: Properties, val woodType: WoodType) : BaseEntity
     }
 
     override fun isPathfindable(
-            blockState: BlockState,
-            blockGetter: BlockGetter,
-            blockPos: BlockPos,
-            pathComputationType: PathComputationType
+        blockState: BlockState,
+        blockGetter: BlockGetter,
+        blockPos: BlockPos,
+        pathComputationType: PathComputationType
     ): Boolean {
         return false
     }
 
     override fun rotate(state: BlockState, rotation: Rotation): BlockState? {
-        return state.setValue(HORIZONTAL_FACING, rotation.rotate(state.getValue(HORIZONTAL_FACING) as Direction)) as BlockState
+        return state.setValue(
+            HORIZONTAL_FACING,
+            rotation.rotate(state.getValue(HORIZONTAL_FACING) as Direction)
+        ) as BlockState
     }
 
     override fun <T : BlockEntity?> getTicker(
