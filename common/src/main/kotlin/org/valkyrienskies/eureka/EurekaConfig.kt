@@ -46,10 +46,6 @@ object EurekaConfig {
         @JsonSchema(description = "Vertical sensitivity up ascend/descend")
         var impulseElevationRate = 7
 
-        // If a ship with weight 0 and 0 balloons would exist in the world, it would have this max attitude.
-        @JsonSchema(description = "The Y level that a ship with 0 mass would naturally float to")
-        var neutralLimit = 80.0
-
         // Allow Eureka controlled ships to be affected by fluid drag
         @JsonSchema(description = "Allow Eureka controlled ships to be affected by fluid drag")
         var doFluidDrag = false
@@ -59,8 +55,11 @@ object EurekaConfig {
         var massPerBalloon = 5000.0
 
         // The amount of speed that the ship can move at when the left/right impulse button is held down.
-        @JsonSchema(description = "Turn sensitivity of the ship helm")
+        @JsonSchema(description = "The maximum linear velocity at any point on the ship caused by helm torque")
         var turnSpeed = 3.0
+
+        @JsonSchema(description = "The maximum linear acceleration at any point on the ship caused by helm torque")
+        var turnAcceleration = 10.0
 
         // The strength used when trying to level the ship
         @JsonSchema(description = "How much torque a ship will apply to try and keep level")
@@ -164,19 +163,13 @@ object EurekaConfig {
         @JsonSchema(description = "Whether the ship helm assembles diagonally connected blocks or not")
         val diagonals = true
 
-        @JsonSchema(description = "How many blocks to assemble per tick")
-        val assembliesPerTick = 1000
-
         @JsonSchema(description = "Weight of ballast when lowest redstone power")
         val ballastWeight: Double = 10000.0
 
         @JsonSchema(description = "Weight of ballast when highest redstone power")
         val ballastNoWeight: Double = 1000.0
 
-        @JsonSchema(description = "Max speed an anchor will pull a ship back to the anchor point")
-        val anchorSpeed: Double = 100000.0
-
-        @JsonSchema(description = "Disassembly is broken ATM, enable at ur own risk.")
-        val enableDisassembly = false
+        @JsonSchema(description = "Whether or not disassembly is permitted")
+        val allowDisassembly = true
     }
 }
